@@ -21,4 +21,10 @@ Things you may want to cover:
 
 * Deployment instructions
 
-* ...
+* docker-compose build
+* docker-compose up
+
+In a new terminal, run:
+* docker-compose run web rails db:create
+* docker-compose run web rails db:migrate
+
