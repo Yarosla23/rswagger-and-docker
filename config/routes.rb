@@ -1,10 +1,15 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  mount Rswag::Ui::Engine => '/api-docs'
+  mount Rswag::Api::Engine => '/api-docs'
+ namespace :api do
+    namespace :v1 do
+      resources :students, only: [ :create, :destroy ]
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
-
-  # Defines the root path route ("/")
-  # root "posts#index"
+      resources :schools, only: [] do
+        resources :classes, only: [ :index ] do
+          resources :students, only: [ :index ], controller: "class_students"
+        end
+      end
+    end
+  end
 end
