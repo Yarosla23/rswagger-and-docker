@@ -1,30 +1,10 @@
-module Api
-  module V1
-    class SchoolClassesController < ApplicationController
-      before_action :set_school
+class Api::V1::SchoolClassesController < ApplicationController
+  def index
+    school = School.find(params[:school_id])
+    classes = school.school_classes
 
-      def index
-        render json: @school.school_classes
-      end
-
-      def create
-        school_class = @school.school_classes.new(school_class_params)
-        if school_class.save
-          render json: school_class, status: :created
-        else
-          render json: { errors: school_class.errors.full_messages }, status: :unprocessable_entity
-        end
-      end
-
-      private
-
-      def set_school
-        @school = School.find(params[:school_id])
-      end
-
-      def school_class_params
-        params.require(:school_class).permit(:number, :letter, :students_count)
-      end
-    end
+    render json: {
+      data: Panko::ArraySerializer.new(classes, each_serializer: SchoolClassSerializer).to_a
+    }, status: :ok
   end
 end

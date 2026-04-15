@@ -1,9 +1,20 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+require 'factory_bot_rails'
+include FactoryBot::Syntax::Methods
+
+puts "Start create..........."
+
+create(:school, :with_classes_and_students,
+  name: "Школа №1",
+  classes_count: 3,
+  students_per_class: 20)
+
+create(:school, :with_classes_and_students,
+  name: "Школа №2",
+  classes_count: 3,
+  students_per_class: 10)
+
+puts "School: #{School.count}"
+puts "SchoolClass: #{SchoolClass.count}"
+puts "Student: #{Student.count}"
+
+puts "End create..........."
