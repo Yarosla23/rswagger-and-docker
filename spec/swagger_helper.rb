@@ -4,7 +4,7 @@ require "yaml"
 RSpec.configure do |config|
   config.openapi_root = Rails.root.join("swagger").to_s
 
-  components = YAML.load_file(Rails.root.join("spec/api/v1/components.yaml")).deep_symbolize_keys!
+  components = YAML.load_file(Rails.root.join("app/modules/swagger/components.yaml")).deep_symbolize_keys!
 
   config.swagger_docs = {
     "v1/swagger.yaml" => {

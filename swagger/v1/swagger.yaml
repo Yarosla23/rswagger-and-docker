@@ -36,9 +36,9 @@ paths:
       parameters: []
       responses:
         '201':
-          description: Successful operation
+          description: все ок, создалось
         '422':
-          description: Invalid input
+          description: некорректный ввод
       requestBody:
         content:
           application/json:

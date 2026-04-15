@@ -8,7 +8,7 @@ RSpec.describe 'api/v1/students', type: :request do
       produces "application/json"
       parameter name: :student, in: :body, schema: { "$ref" => "#/components/schemas/Student" }
 
-      response(201, "Successful operation") do
+      response(201, "все ок, создалось") do
         let(:school) { School.create!(name: "Test School") }
         let(:school_class) { school.school_classes.create!(number: 1, letter: "А") }
         let(:student) do
@@ -17,18 +17,18 @@ RSpec.describe 'api/v1/students', type: :request do
             last_name: "Абдурахмангаджиевич",
             surname: "Мухобойников-Сыркин",
             school_id: school.id,
-            class_id: school_class.id
+            school_class_id: school_class.id
           }
         end
 
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body["data"]["first_name"]).to eq("Вячеслав")
-          expect(response.headers["X-Auth-Token"]).to be_present
+          expect(body["first_name"]).to eq("Вячеслав")
+          expect(response.headers["Authorization"]).to match(/^Bearer /)
         end
       end
 
-      response(422, "Invalid input") do
+      response(422, "некорректный ввод") do
         let(:student) { { first_name: "" } }
         run_test!
       end
@@ -50,7 +50,7 @@ RSpec.describe 'api/v1/students', type: :request do
           last_name: "Абдурахмангаджиевич",
           surname: "Мухобойников-Сыркин",
           school_id: school.id,
-          class_id: school_class.id
+          school_class_id: school_class.id
         )
       end
       let(:user_id) { student_record.id }
@@ -76,7 +76,6 @@ RSpec.describe 'api/v1/students', type: :request do
   end
 
   path '/schools/{school_id}/classes/{class_id}/students' do
-    # You'll want to customize the parameter types...
     parameter name: 'school_id', in: :path, type: :string, description: 'school_id'
     parameter name: 'class_id', in: :path, type: :string, description: 'class_id'
 

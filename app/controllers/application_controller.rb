@@ -8,9 +8,7 @@ class ApplicationController < ActionController::API
     render json: { error: exception.message }, status: :unprocessable_entity
   end
 
-  def render_not_found(exception)
-    id = exception.id
-
-    render json: { error: "Обьект не найден #{id}" }, status: :not_found
+  def render_not_found(e)
+    render json: { error: "Обьект #{e.model.underscore} не найден #{e.id}" }, status: :not_found
   end
 end
