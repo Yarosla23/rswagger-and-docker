@@ -12,6 +12,7 @@ RSpec.configure do |config|
       info: { title: "API V1", version: "v1" },
       paths: {},
       servers: [ { url: "http://localhost:3000/api/v1" } ],
+      security: [ { bearerAuth: [] } ],
       **components
     }
   }

@@ -4,7 +4,7 @@ class Api::V1::StudentsController < ApplicationController
     school_class = school.school_classes.includes(:students).find(params[:school_class_id])
     students = school_class.students
 
-    render json: {
+    render json:  {
       data: Panko::ArraySerializer.new(
         students,
         each_serializer: StudentSerializer
@@ -16,9 +16,9 @@ class Api::V1::StudentsController < ApplicationController
     student = Student.new(student_params)
 
     if student.save
-      response.set_header("Authorization", "Bearer #{student.generate_token}")
+      response.set_header("X-Auth-Token", student.generate_token)
 
-      render json: StudentSerializer.new.serialize_to_json(student), status: :created
+      render json:  StudentSerializer.new.serialize_to_json(student), status: :created
     else
       render json: { errors: student.errors.full_messages }, status: :unprocessable_entity
     end
@@ -41,11 +41,12 @@ class Api::V1::StudentsController < ApplicationController
   def student_params
     p = params.require(:student).permit(:first_name, :last_name, :surname, :school_id)
     p[:school_class_id] = params[:class_id] || params[:school_class_id]
-    p # костыль ок :)
+    p # сори за костыль
   end
 
+
   def authorized?(student)
-    token = request.headers["Authorization"].to_s.delete_prefix("Bearer ").strip
+    token = request.headers["Authorization"].to_s.delete_prefix("Bearer ")
 
     token.present? && token == student.generate_token
   end

@@ -14,7 +14,6 @@ paths:
     get:
       summary: Список классов школы
       tags:
-      - schools
       - classes
       responses:
         '200':
@@ -28,59 +27,18 @@ paths:
                     type: array
                     items:
                       "$ref": "#/components/schemas/Class"
-  "/students":
-    post:
-      summary: Регистрация нового студента
-      tags:
-      - students
-      parameters: []
-      responses:
-        '201':
-          description: все ок, создалось
-        '422':
-          description: некорректный ввод
-      requestBody:
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/schemas/Student"
-  "/students/{user_id}":
-    delete:
-      summary: Удалить студента
-      tags:
-      - students
-      parameters:
-      - name: user_id
-        in: path
-        schema:
-          type: integer
-        required: true
-      - name: Authorization
-        in: header
-        schema:
-          type: string
-        required: true
-      responses:
-        '204':
-          description: No Content
-        '400':
-          description: Некорректный id студента
-        '401':
-          description: Unauthorized
   "/schools/{school_id}/classes/{class_id}/students":
     parameters:
     - name: school_id
       in: path
-      description: school_id
       required: true
       schema:
-        type: string
+        type: integer
     - name: class_id
       in: path
-      description: class_id
       required: true
       schema:
-        type: string
+        type: integer
     get:
       summary: Список студентов
       tags:
@@ -98,8 +56,51 @@ paths:
                     type: array
                     items:
                       "$ref": "#/components/schemas/Student"
+  "/students":
+    post:
+      summary: Регистрация нового студента
+      tags:
+      - students
+      parameters: []
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            X-Auth-Token:
+              schema:
+                type: string
+              description: Токен для последующей авторизации
+        '405':
+          description: Invalid input
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Student"
+  "/students/{user_id}":
+    delete:
+      summary: Удалить студента
+      tags:
+      - students
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: user_id
+        in: path
+        schema:
+          type: integer
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Некорректный id студента
+        '401':
+          description: Unauthorized
 servers:
 - url: http://localhost:3000/api/v1
+security:
+- bearerAuth: []
 components:
   securitySchemes:
     bearerAuth:
