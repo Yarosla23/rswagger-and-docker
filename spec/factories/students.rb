@@ -4,6 +4,6 @@ FactoryBot.define do
     last_name { Faker::Name.last_name }
     surname { Faker::Name.middle_name }
     association :school
-    association :school_class
+    school_class { association :school_class, school: }
   end
 end

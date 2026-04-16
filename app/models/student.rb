@@ -1,10 +1,10 @@
 class Student < ApplicationRecord
-  belongs_to :school
-  belongs_to :school_class, counter_cache: true
+  NAME_LENGTH_RANGE = 2..50
 
-  validates :first_name, :last_name, :surname, presence: true, length: {minimum: 2, maximum: 50}
+  belongs_to :school, inverse_of: :students
+  belongs_to :school_class, inverse_of: :students
 
-  validate :school_class_belongs_to_same_school
+  validates :first_name, :last_name, :surname, presence: true, length: { in: NAME_LENGTH_RANGE }
 
   def auth_token
     self.class.build_auth_token(id)
@@ -26,16 +26,6 @@ class Student < ApplicationRecord
   end
 
   def self.auth_token_salt
-    ENV["AUTH_TOKEN_SALT"].presence || Rails.application.credentials.secret_key_base
-  end
-
-  private
-
-  def school_class_belongs_to_same_school
-    if school_id.present? && school_class_id.present?
-      unless school_class.school_id == school_id
-        errors.add(:school_class_id, "должен принадлежать той же школе")
-      end
-    end
+    Rails.application.credentials.secret_key_base
   end
 end

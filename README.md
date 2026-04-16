@@ -3,7 +3,8 @@
 ## запуск
 
 ```bash
-docker compose up --build
+  docker compose build
+  docker compose up
 ```
 
 При старте контейнера `web` приложение автоматически:
@@ -15,5 +16,5 @@ docker compose up --build
 ## Тестинг приложения через rswagger
 
 ```bash
-http://localhost:3000/api-docs
+  http://localhost:3000/api-docs
 ```

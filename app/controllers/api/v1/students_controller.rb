@@ -1,15 +1,11 @@
-class Api::V1::StudentsController < ApplicationController
+class Api::V1::StudentsController < Api::V1::BaseController
+  include BearerTokenAuthenticatable
+
   def index
     school = School.find(params[:school_id])
-    school_class = school.school_classes.includes(:students).find(params[:class_id])
-    students = school_class.students
+    school_class = school.school_classes.find(params[:class_id])
 
-    render json:  {
-      data: Panko::ArraySerializer.new(
-        students,
-        each_serializer: StudentSerializer
-      ).to_a
-    }, status: :ok
+    render_collection(school_class.students, serializer: StudentSerializer)
   end
 
   def create
@@ -17,52 +13,35 @@ class Api::V1::StudentsController < ApplicationController
 
     if student.save
       response.set_header("X-Auth-Token", student.auth_token)
-
-      render json: StudentSerializer.new.serialize_to_json(student), status: :created
+      render_resource(student, serializer: StudentSerializer, status: :created)
     else
-      render json: {errors: student.errors.full_messages}, status: :method_not_allowed
+      render_errors(student.errors.full_messages, status: :method_not_allowed)
     end
   end
 
   def destroy
     student = Student.find_by(id: params[:user_id])
-    return render json: {error: "Некорректный id студента"}, status: :bad_request unless student
+    return render_error("Некорректный id студента", status: :bad_request) if student.blank?
 
-    if authorized?(student)
-      student.destroy
-      head :no_content
-    else
-      render json: {error: "Некорректная авторизация"}, status: :unauthorized
-    end
+    return render_error("Некорректная авторизация", status: :unauthorized) unless student.valid_auth_token?(bearer_token)
+
+    student.destroy
+    head :no_content
   end
 
   private
 
   def student_params
-    source = if params[:student].is_a?(ActionController::Parameters)
-      params.require(:student).merge(params.permit(:class_id, :school_class_id))
-    else
-      params
-    end
+    permitted_attributes = params.permit(
+      :first_name,
+      :last_name,
+      :surname,
+      :school_id,
+      :class_id,
+      :school_class_id
+    )
 
-    permitted = source.permit(:first_name, :last_name, :surname, :school_id, :class_id, :school_class_id)
-
-    permitted[:school_class_id] ||= permitted.delete(:class_id)
-    permitted.except(:class_id)
-  end
-
-  def authorized?(student)
-    token = bearer_token
-
-    student.valid_auth_token?(token)
-  end
-
-  def bearer_token
-    authorization_header = request.headers["Authorization"].to_s
-    scheme, token = authorization_header.split(" ", 2)
-
-    return if scheme != "Bearer"
-
-    token
+    permitted_attributes[:school_class_id] = permitted_attributes.delete(:class_id)
+    permitted_attributes.except(:class_id)
   end
 end

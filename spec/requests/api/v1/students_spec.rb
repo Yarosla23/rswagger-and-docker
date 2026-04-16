@@ -124,22 +124,28 @@ RSpec.describe 'api/v1/students', type: :request do
   end
 
   describe "POST /api/v1/students" do
-    it "accepts class_id from the top-level JSON body" do
-      school = School.create!(name: "Test School")
-      school_class = school.school_classes.create!(number: 1, letter: "А")
+    let(:school) { create(:school, name: "Test School") }
+    let(:school_class) { create(:school_class, school:, number: 1, letter: "А") }
+    let(:request_params) do
+      {
+        first_name: "Вячеслав",
+        last_name: "Абдурахмангаджиевич",
+        surname: "Мухобойников-Сыркин",
+        school_id: school.id,
+        class_id: school_class.id
+      }
+    end
+    let(:headers) do
+      {
+        "CONTENT_TYPE" => "application/json",
+        "ACCEPT" => "application/json"
+      }
+    end
 
+    it "accepts class_id from the top-level JSON body" do
       post "/api/v1/students",
-        params: {
-          first_name: "Вячеслав",
-          last_name: "Абдурахмангаджиевич",
-          surname: "Мухобойников-Сыркин",
-          school_id: school.id,
-          class_id: school_class.id
-        }.to_json,
-        headers: {
-          "CONTENT_TYPE" => "application/json",
-          "ACCEPT" => "application/json"
-        }
+        params: request_params.to_json,
+        headers: headers
 
       expect(response).to have_http_status(:created)
 
@@ -149,24 +155,41 @@ RSpec.describe 'api/v1/students', type: :request do
       expect(response.headers["X-Auth-Token"]).to be_present
       expect(response.headers["X-Auth-Token"]).to eq(Student.find(body["id"]).auth_token)
     end
+
+    it "accepts nested student params and keeps top-level class_id fallback" do
+      post "/api/v1/students",
+        params: {
+          student: request_params.except(:class_id),
+          class_id: school_class.id
+        }.to_json,
+        headers: headers
+
+      expect(response).to have_http_status(:created)
+
+      body = JSON.parse(response.body)
+      expect(body["class_id"]).to eq(school_class.id)
+      expect(body["school_id"]).to eq(school.id)
+    end
   end
 
   describe "DELETE /api/v1/students/:user_id" do
-    it "deletes a student with a valid bearer token" do
-      school = School.create!(name: "Delete School")
-      school_class = school.school_classes.create!(number: 1, letter: "А")
-      student = Student.create!(
+    let(:school) { create(:school, name: "Delete School") }
+    let(:school_class) { create(:school_class, school:, number: 1, letter: "А") }
+    let!(:student) do
+      create(
+        :student,
         first_name: "Иван",
         last_name: "Иванович",
         surname: "Иванов",
-        school_id: school.id,
-        school_class_id: school_class.id
+        school:,
+        school_class:
       )
+    end
+    let(:headers) { { "Authorization" => "Bearer #{student.auth_token}" } }
 
+    it "deletes a student with a valid bearer token" do
       delete "/api/v1/students/#{student.id}",
-        headers: {
-          "Authorization" => "Bearer #{student.auth_token}"
-        }
+        headers: headers
 
       expect(response).to have_http_status(:no_content)
       expect(Student.find_by(id: student.id)).to be_nil
