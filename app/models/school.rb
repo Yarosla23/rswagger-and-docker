@@ -4,6 +4,9 @@ class School < ApplicationRecord
 
   validates :name,
     presence: true,
-    length: { minimum: 2, maximum: 100 },
-    uniqueness: { case_sensitive: false, message: "школа с таким названием уже существует" }
+    length: {
+      minimum: 2,
+      maximum: 100
+    },
+    uniqueness: {case_sensitive: false, message: "школа с таким названием уже существует"}
 end

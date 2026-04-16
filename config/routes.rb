@@ -4,13 +4,10 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :students, only: [ :create, :destroy ]
+      resources :students, only: [ :create, :destroy ], param: :user_id
 
-      resources :schools, only: [] do
-        resources :school_classes, path: "classes", only: :index do
-          resources :students, only: :index
-        end
-      end
+      get "schools/:school_id/classes", to: "school_classes#index"
+      get "schools/:school_id/classes/:class_id/students", to: "students#index"
     end
   end
 end

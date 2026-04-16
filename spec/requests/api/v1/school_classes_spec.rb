@@ -1,8 +1,11 @@
+require "swagger_helper"
+
 RSpec.describe "api/v1/school_classes", type: :request do
   path "/schools/{school_id}/classes" do
-    parameter name: :school_id, in: :path, type: :integer
+    parameter name: :school_id, in: :path, schema: { type: :integer, format: :int32 }, required: true
 
-    get("Список классов школы") do
+    get("Вывести список классов школы") do
+      operationId "getClassList"
       tags "classes"
       produces "application/json"
 

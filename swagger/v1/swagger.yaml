@@ -1,18 +1,25 @@
 ---
 openapi: 3.0.3
 info:
-  title: API V1
-  version: v1
+  title: API сервиса для тестового задания
+  version: 0.1.0
+tags:
+- name: students
+  description: Всё что касается учеников
+- name: classes
+  description: Всё что касается классов
 paths:
   "/schools/{school_id}/classes":
     parameters:
     - name: school_id
       in: path
-      required: true
       schema:
         type: integer
+        format: int32
+      required: true
     get:
-      summary: Список классов школы
+      summary: Вывести список классов школы
+      operationId: getClassList
       tags:
       - classes
       responses:
@@ -31,16 +38,20 @@ paths:
     parameters:
     - name: school_id
       in: path
-      required: true
       schema:
         type: integer
+        format: int32
+      required: true
     - name: class_id
       in: path
-      required: true
       schema:
         type: integer
+        format: int32
+      required: true
+      description: id класса
     get:
-      summary: Список студентов
+      summary: Вывести список студентов класса
+      operationId: getClassStudentList
       tags:
       - students
       - classes
@@ -59,6 +70,7 @@ paths:
   "/students":
     post:
       summary: Регистрация нового студента
+      operationId: createStudent
       tags:
       - students
       parameters: []
@@ -69,7 +81,13 @@ paths:
             X-Auth-Token:
               schema:
                 type: string
-              description: Токен для последующей авторизации
+              description: Токен для последующей авторизации, например sha256(user_id
+                + secret_salt)
+              example: 3525dcdddea774939652f7f11df6d7db10a9db35a5d758c64d600a00c1cc41be
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Student"
         '405':
           description: Invalid input
       requestBody:
@@ -77,9 +95,12 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/Student"
+        required: true
+        description: Новый студент
   "/students/{user_id}":
     delete:
       summary: Удалить студента
+      operationId: deleteStudent
       tags:
       - students
       security:
@@ -87,20 +108,18 @@ paths:
       parameters:
       - name: user_id
         in: path
+        required: true
+        description: id студента
         schema:
           type: integer
-        required: true
+          format: int64
       responses:
-        '200':
-          description: Successful operation
         '400':
           description: Некорректный id студента
         '401':
-          description: Unauthorized
+          description: Некорректная авторизация
 servers:
 - url: http://localhost:3000/api/v1
-security:
-- bearerAuth: []
 components:
   securitySchemes:
     bearerAuth:

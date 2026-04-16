@@ -1,28 +1,19 @@
 # API задание
 
-
 ## запуск
 
 ```bash
-docker compose build
-```
-## в другой консоле
-
-```bash
-docker compose exec web bash
+docker compose up --build
 ```
 
-```bash
-rails db:migrate
-rails db:migrate
-rails db:seed
-```
-## Запуск
+При старте контейнера `web` приложение автоматически:
 
-```bash
-docker compose up
-```
+- ждёт готовности PostgreSQL
+- выполняет `rails db:prepare`
+- поднимает Rails-сервер на `http://localhost:3000`
+
 ## Тестинг приложения через rswagger
+
 ```bash
-http://localhost:3000/api-docs/index.html
+http://localhost:3000/api-docs
 ```

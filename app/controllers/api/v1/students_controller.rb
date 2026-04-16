@@ -1,7 +1,7 @@
 class Api::V1::StudentsController < ApplicationController
   def index
     school = School.find(params[:school_id])
-    school_class = school.school_classes.includes(:students).find(params[:school_class_id])
+    school_class = school.school_classes.includes(:students).find(params[:class_id])
     students = school_class.students
 
     render json:  {
@@ -16,38 +16,53 @@ class Api::V1::StudentsController < ApplicationController
     student = Student.new(student_params)
 
     if student.save
-      response.set_header("X-Auth-Token", student.generate_token)
+      response.set_header("X-Auth-Token", student.auth_token)
 
-      render json:  StudentSerializer.new.serialize_to_json(student), status: :created
+      render json: StudentSerializer.new.serialize_to_json(student), status: :created
     else
-      render json: { errors: student.errors.full_messages }, status: :unprocessable_entity
+      render json: {errors: student.errors.full_messages}, status: :method_not_allowed
     end
   end
 
   def destroy
-    student = Student.find_by(id: params[:id])
-    return render json: { error: "Некорректный id студента" }, status: :bad_request unless student
+    student = Student.find_by(id: params[:user_id])
+    return render json: {error: "Некорректный id студента"}, status: :bad_request unless student
 
     if authorized?(student)
       student.destroy
       head :no_content
     else
-      render json: { error: "Некорректная авторизация" }, status: :unauthorized
+      render json: {error: "Некорректная авторизация"}, status: :unauthorized
     end
   end
 
   private
 
   def student_params
-    p = params.require(:student).permit(:first_name, :last_name, :surname, :school_id)
-    p[:school_class_id] = params[:class_id] || params[:school_class_id]
-    p # сори за костыль
+    source = if params[:student].is_a?(ActionController::Parameters)
+      params.require(:student).merge(params.permit(:class_id, :school_class_id))
+    else
+      params
+    end
+
+    permitted = source.permit(:first_name, :last_name, :surname, :school_id, :class_id, :school_class_id)
+
+    permitted[:school_class_id] ||= permitted.delete(:class_id)
+    permitted.except(:class_id)
   end
 
-
   def authorized?(student)
-    token = request.headers["Authorization"].to_s.delete_prefix("Bearer ")
+    token = bearer_token
 
-    token.present? && token == student.generate_token
+    student.valid_auth_token?(token)
+  end
+
+  def bearer_token
+    authorization_header = request.headers["Authorization"].to_s
+    scheme, token = authorization_header.split(" ", 2)
+
+    return if scheme != "Bearer"
+
+    token
   end
 end

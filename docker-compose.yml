@@ -7,15 +7,21 @@ services:
       POSTGRES_USER: myapp
       POSTGRES_PASSWORD: password
       POSTGRES_DB: myapp_development
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myapp -d myapp_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
   web:
     build: .
-    command: bash -c "rm -f tmp/pids/server.pid && rails server -b 0.0.0.0"
+    command: ["./bin/rails", "server", "-b", "0.0.0.0"]
     volumes:
       - .:/opt/app
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DATABASE_HOST: db
       DATABASE_USERNAME: myapp

@@ -11,15 +11,15 @@ class SchoolClass < ApplicationRecord
 
   validates :letter,
     presence: true,
-    length: { maximum: 1 },
-    format: { with: /\A[А-ЯЁ]\z/, message: "должна быть одна русская буква" }
+    length: {maximum: 1},
+    format: {with: /\A[А-ЯЁ]\z/, message: "должна быть одна русская буква"}
 
   validates :students_count,
-    numericality: { only_integer: true, greater_than_or_equal_to: 0 },
+    numericality: {only_integer: true, greater_than_or_equal_to: 0},
     allow_nil: true
 
   validates :number,
     uniqueness: {
-      scope: [ :school_id, :letter ], message: "класс с таким номером и буквой уже существует в этой школе"
+      scope: [:school_id, :letter], message: "класс с таким номером и буквой уже существует в этой школе"
     }
 end

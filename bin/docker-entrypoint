@@ -6,8 +6,16 @@ if [ -z "${LD_PRELOAD+x}" ]; then
     export LD_PRELOAD
 fi
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+# If running the Rails server, clean up the stale pid, wait for Postgres, and prepare the database.
+if [ "$1" = "./bin/rails" ] && [ "$2" = "server" ]; then
+  rm -f /opt/app/tmp/pids/server.pid
+
+  if [ -n "${DATABASE_HOST:-}" ] && [ -n "${DATABASE_USERNAME:-}" ] && [ -n "${DATABASE_NAME:-}" ]; then
+    until pg_isready -h "$DATABASE_HOST" -U "$DATABASE_USERNAME" -d "$DATABASE_NAME" >/dev/null 2>&1; do
+      sleep 1
+    done
+  fi
+
   ./bin/rails db:prepare
 fi
 

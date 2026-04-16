@@ -16,4 +16,7 @@ RUN bundle install
 
 COPY . .
 
-CMD ["rails", "server", "-b", "0.0.0.0"]
+RUN chmod +x ./bin/docker-entrypoint ./bin/rails
+
+ENTRYPOINT ["./bin/docker-entrypoint"]
+CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
