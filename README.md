@@ -1,30 +1,28 @@
-# README
+# API задание
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
 
-Things you may want to cover:
+## запуск
 
-* Ruby version
+```bash
+docker compose build
+```
+## в другой консоле
 
-* System dependencies
+```bash
+docker compose exec web bash
+```
 
-* Configuration
+```bash
+rails db:migrate
+rails db:migrate
+rails db:seed
+```
+## Запуск
 
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* docker-compose build
-* docker-compose up
-
-In a new terminal, run:
-* docker-compose run web rails db:create
-* docker-compose run web rails db:migrate
-
+```bash
+docker compose up
+```
+## Тестинг приложения через rswagger
+```bash
+http://localhost:3000/api-docs/index.html
+```
